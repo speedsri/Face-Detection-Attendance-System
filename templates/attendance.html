@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance - Face Attendance System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background-color: #343a40;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .page-header {
+            background-color: #0d6efd;
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 30px 0;
+            margin-top: 50px;
+        }
+        .table-responsive {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Face Attendance System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/employees">Employees</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/attendance">Attendance</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/attendance_kiosk">Attendance Kiosk</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1><i class="bi bi-calendar-check me-2"></i> Attendance Records</h1>
+                    <p class="lead">View and manage employee attendance data</p>
+                </div>
+                <a href="/attendance_kiosk" class="btn btn-light btn-lg"><i class="bi bi-camera me-2"></i> Attendance Kiosk</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Attendance Content -->
+    <section class="container">
+        <!-- Date Selection and Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form action="/attendance" method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="date" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="date" name="date" value="{{ selected_date }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="employee" class="form-label">Employee</label>
+                        <select class="form-select" id="employee" name="employee_id">
+                            <option value="">All Employees</option>
+                            <!-- This would be populated from the backend -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="event_type" class="form-label">Event Type</label>
+                        <select class="form-select" id="event_type" name="event_type">
+                            <option value="">All Events</option>
+                            <option value="check_in">Check-in</option>
+                            <option value="check_out">Check-out</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Apply</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Attendance Records -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-list-check me-2"></i> Attendance Records for {{ selected_date }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Employee</th>
+                                <th>Event Type</th>
+                                <th>Timestamp</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in attendance_records %}
+                            <tr>
+                                <td>{{ record.id }}</td>
+                                <td>{{ record.employee_name }} (ID: {{ record.employee_id }})</td>
+                                <td>
+                                    {% if record.event_type == 'check_in' %}
+                                    <span class="badge bg-success">Check-in</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Check-out</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ record.timestamp }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#viewModal{{ record.id }}">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ record.id }}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Summary -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i> Attendance Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Present Employees</h5>
+                                <div class="progress mb-3" style="height: 25px;">
+                                    {% set present_percentage = (attendance_records|selectattr('event_type', 'equalto', 'check_in')|list|length / 200) * 100 %}
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ present_percentage }}%;" aria-valuenow="{{ present_percentage }}" aria-valuemin="0" aria-valuemax="100">{{ attendance_records|selectattr('event_type', 'equalto', 'check_in')|list|length }} / 200</div>
+                                </div>
+                                <p class="card-text">{{ present_percentage|round(1) }}% of employees present on {{ selected_date }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Check-in/Check-out Ratio</h5>
+                                <div class="row text-center">
+                                    <div class="col-6">
+                                        <h3 class="text-success">{{ attendance_records|selectattr('event_type', 'equalto', 'check_in')|list|length }}</h3>
+                                        <p>Check-ins</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <h3 class="text-danger">{{ attendance_records|selectattr('event_type', 'equalto', 'check_out')|list|length }}</h3>
+                                        <p>Check-outs</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Attendance Record Modals -->
+    {% for record in attendance_records %}
+    <!-- View Modal -->
+    <div class="modal fade" id="viewModal{{ record.id }}" tabindex="-1" aria-labelledby="viewModalLabel{{ record.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="viewModalLabel{{ record.id }}">Attendance Record Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Record ID:</strong>
+                            <p>{{ record.id }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Date:</strong>
+                            <p>{{ record.date }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Employee ID:</strong>
+                            <p>{{ record.employee_id }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Employee Name:</strong>
+                            <p>{{ record.employee_name }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Event Type:</strong>
+                            <p>
+                                {% if record.event_type == 'check_in' %}
+                                <span class="badge bg-success">Check-in</span>
+                                {% else %}
+                                <span class="badge bg-danger">Check-out</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>Timestamp:</strong>
+                            <p>{{ record.timestamp }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deleteModal{{ record.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ record.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteModalLabel{{ record.id }}">Confirm Delete</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this attendance record?</p>
+                    <p><strong>Employee:</strong> {{ record.employee_name }}</p>
+                    <p><strong>Event:</strong> {{ record.event_type }}</p>
+                    <p><strong>Time:</strong> {{ record.timestamp }}</p>
+                    <p class="text-danger">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form action="/delete_attendance" method="post">
+                        <input type="hidden" name="record_id" value="{{ record.id }}">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Face Attendance System</h5>
+                    <p>An advanced face recognition system for automated attendance tracking.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/" class="text-white">Home</a></li>
+                        <li><a href="/dashboard" class="text-white">Dashboard</a></li>
+                        <li><a href="/employees" class="text-white">Employees</a></li>
+                        <li><a href="/attendance" class="text-white">Attendance</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Contact</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-envelope me-2"></i> support@faceattendance.com</li>
+                        <li><i class="bi bi-telephone me-2"></i> (123) 456-7890</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4 bg-light">
+            <div class="text-center">
+                <p>&copy; 2025 Face Attendance System. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
