@@ -100,8 +100,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Support
 
 For support, please contact:
-- Email: support@faceattendance.com
-- Phone: (123) 456-7890
+- Email: earsekanayake@yandex.com
+- Phone: +94(71) 803-2779
 
 ---
 
